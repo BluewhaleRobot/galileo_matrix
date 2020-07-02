@@ -26,7 +26,9 @@ fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
     let queryres = DATABASE.lock().unwrap().get_timestamp(timequery);
     if let Err(_) = queryres {
         // 未找到记录则返回空数组
-        return simple_response("null".to_string(),ContentType::JavaScript, Status::Ok);
+        return simple_response(json!({
+            "timestamp": 1593668491541i64,
+        }).to_string(),ContentType::JavaScript, Status::Ok);
     }
     let doc:Document = queryres.unwrap();
     return simple_response(serde_json::to_string(&doc).unwrap(), ContentType::HTML, Status::BadRequest);
