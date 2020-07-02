@@ -21,6 +21,6 @@ address = "127.0.0.1"
 port = 10425
 workers = 4
 keep_alive = 5
-log = "critical"
+log = "normal"
 secret_key = "Dn78BvF4RpRdgo05hJR3mzMtxdbH4+o0tEB6kBdJKo8="
 limits = { json = 4073741824 }

@@ -4,7 +4,7 @@ Description=Xiaoqiang Statistics Web Service
 [Service]
 Type=simple
 User=bwbot
-ExecStart=/home/bwbot/data/src/galileo_matrix/target/debug/galileo_matrix
+ExecStart=/home/bwbot/data/src/galileo_matrix/start.sh
 
 [Install]
 WantedBy=multi-user.target

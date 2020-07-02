@@ -13,7 +13,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for IpAddr {
     type Error = std::convert::Infallible;
 
     fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
-        let ip_header = request.headers().get("HTTP_X_FORWARDED_FOR");
+        let ip_header = request.headers().get("X-Real-IP");
         let headers:Vec<String> =  ip_header.map(|a| String::from(a)).collect();
         if headers.len() == 1 {
             return Success(IpAddr(headers[0].to_owned()));
