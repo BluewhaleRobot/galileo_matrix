@@ -1,13 +1,13 @@
 use lazy_static::lazy_static;
+use std::sync::Mutex;
 use super::models::{TimeStampQuery,ServerRecord};
 
 use mongodb::{
-    bson::{doc, Bson, Document, to_bson},
+    bson::{doc, Document, to_bson},
     sync::{Client},
     options::FindOneOptions,
 };
 
-use std::collections::HashMap;
 
 pub struct Database {
     collections: Vec<String>,
@@ -55,33 +55,19 @@ impl Database {
         return Err("record not found".to_string());
     }
 
-    pub fn insert(&self, collection: &str, records: Vec<ServerRecord>) -> Result<String, String> {
-        let res = Document::from(records[0]);
-        let bsons:Vec<Document> = records.iter().map(Document::from).map(|a| a.unwrap()).collect();
-        let res = self.db.collection(collection).insert_many(records, None);
-
+    pub fn insert(&self, collection: &str, records: &Vec<ServerRecord>) -> Result<String, String> {
+        let bsons:Vec<Document> = records.iter().map(|d| -> Document {
+            to_bson(d).unwrap().as_document().unwrap().to_owned()
+        }).collect();
+        let res = self.db.collection(collection).insert_many(bsons, None);
+        if let Err(_) = res {
+            return Err("insert data to database failed".to_string());
+        }
         Ok(String::from(""))
     }
 }
-use std::ops::{Deref, DerefMut};
-// impl Deref for Database  {
-//     type Target = Database;
-
-//     fn deref(&self) -> &Self::Target {
-//         &self
-//     }
-// }
-
-// impl DerefMut for Database {
-//     type Target = Database;
-//     fn deref_mut(&mut self) -> &mut Database {
-//         &mut self
-//     }
-// }
-
-use std::sync::Mutex;
 
 lazy_static! {
-    pub static ref database: Mutex<Database> = Mutex::new(Database::new());
+    pub static ref DATABASE: Mutex<Database> = Mutex::new(Database::new());
 }
 

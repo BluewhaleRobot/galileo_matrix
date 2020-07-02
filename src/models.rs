@@ -1,15 +1,9 @@
-use rocket_contrib::json::{Json, JsonValue};
-use std::io::Read;
-use rocket::{Request, Data, Outcome, Outcome::*, Response};
+use rocket::Response;
 use rocket::response::Body;
 use std::io::Cursor;
-use rocket::request::{self, FromRequest};
-use rocket::data::{self, FromDataSimple};
 use rocket::http::{Status, ContentType};
 use serde_derive::{Deserialize, Serialize};
-use serde::de::{Deserialize, Deserializer};
 use regex::Regex;
-use super::database::database;
 
 
 #[derive(Serialize, Deserialize)]
@@ -30,9 +24,9 @@ impl TimeStampQuery {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Record {
-    pub timestamp: u64,
+    pub timestamp: i64,
     pub collection: String,
-    pub record: RecordItem
+    pub record: RecordItem,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -53,16 +47,31 @@ pub struct ServerRecordItem {
     #[serde(rename = "type")]
     pub type_name: Option<String>,
     pub id: String,
-    pub timestamp: u64,
+    pub timestamp: i64,
     pub ip: String,
-    pub location: String,
+    pub location: Option<PhyAddrInfo>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ServerRecord {
-    pub timestamp: u64,
+    pub timestamp: i64,
     pub collection: String,
-    pub record: ServerRecordItem
+    pub record: ServerRecordItem,
+    pub id: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PhyAddrInfo {
+    pub city: String,
+    pub metro: i64,
+    pub area: i64,
+    pub country: String,
+    pub region: String,
+    pub range: [i64; 2],
+    pub ip: String,
+    pub eu: String,
+    pub timezone: String,
+    pub ll: [f32; 2]
 }
 
 pub fn simple_response<'a>(content: String, content_type: ContentType, status: Status) -> Response<'a> {

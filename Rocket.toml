@@ -5,7 +5,7 @@ workers = 1
 keep_alive = 5
 log = "normal"
 secret_key = "qmqIpu785xlcv94cHL01moqTKwD2Ji0bwEX4pKqKPwI="
-limits = { forms = 32768 }
+limits = { json = 4073741824 }
 
 [staging]
 address = "0.0.0.0"
@@ -14,7 +14,7 @@ workers = 4
 keep_alive = 5
 log = "normal"
 secret_key = "ykLSoHCcX9qLiZLS0zg6mQwG+mkObZ7OIqZX1hma5Gs="
-limits = { forms = 32768 }
+limits = { json = 4073741824 }
 
 [production]
 address = "0.0.0.0"
@@ -23,4 +23,4 @@ workers = 4
 keep_alive = 5
 log = "critical"
 secret_key = "Dn78BvF4RpRdgo05hJR3mzMtxdbH4+o0tEB6kBdJKo8="
-limits = { forms = 32768 }
+limits = { json = 4073741824 }
