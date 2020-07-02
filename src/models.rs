@@ -39,7 +39,7 @@ pub struct RecordItem {
     pub type_name: Option<String>,
     pub info: Option<String>,
     // power
-    pub power: Option<i32>,
+    pub power: Option<f32>,
     // navigation
     // navigation
     pub events: Option<Vec<NavEventItem>>,
@@ -60,7 +60,7 @@ pub struct ServerRecordItem {
     #[serde(rename = "type")]
     pub type_name: Option<String>,
     // power
-    pub power: Option<i32>,
+    pub power: Option<f32>,
     // navigation
     pub events: Option<Vec<NavEventItem>>,
     pub results: Option<String>,
@@ -75,14 +75,6 @@ pub struct NavEventItem {
     pub type_name: String,
     pub duration: i64,
     pub timestamp: i64,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ServerRecord {
-    pub timestamp: i64,
-    pub collection: String,
-    pub record: ServerRecordItem,
-    pub id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

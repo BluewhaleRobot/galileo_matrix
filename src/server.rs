@@ -2,7 +2,7 @@ use rocket::{get, post, routes, Rocket};
 use rocket::http::{Status, ContentType};
 use rocket_contrib::json::Json;
 use rocket::response::Response;
-use super::models::{simple_response, TimeStampQuery, Record, ServerRecord, ServerRecordItem, PhyAddrInfo};
+use super::models::{simple_response, TimeStampQuery, Record, ServerRecordItem, PhyAddrInfo};
 use serde_json::json;
 use super::database::DATABASE;
 use mongodb::bson::{Document, Bson};
