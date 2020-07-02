@@ -41,7 +41,6 @@ pub struct RecordItem {
     // power
     pub power: Option<f32>,
     // navigation
-    // navigation
     pub events: Option<Vec<NavEventItem>>,
     pub results: Option<String>,
 }
@@ -74,7 +73,7 @@ pub struct NavEventItem {
     #[serde(rename = "type")]
     pub type_name: String,
     pub duration: i64,
-    pub timestamp: i64,
+    pub timestamp: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
