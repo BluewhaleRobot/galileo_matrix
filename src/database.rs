@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use std::sync::Mutex;
-use super::models::{TimeStampQuery,ServerRecord};
+use super::models::{TimeStampQuery, ServerRecordItem};
 
 use mongodb::{
     bson::{doc, Document, to_bson},
@@ -55,7 +55,7 @@ impl Database {
         return Err("record not found".to_string());
     }
 
-    pub fn insert(&self, collection: &str, records: &Vec<ServerRecord>) -> Result<String, String> {
+    pub fn insert(&self, collection: &str, records: &Vec<ServerRecordItem>) -> Result<String, String> {
         let bsons:Vec<Document> = records.iter().map(|d| -> Document {
             to_bson(d).unwrap().as_document().unwrap().to_owned()
         }).collect();

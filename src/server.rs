@@ -37,7 +37,7 @@ fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
 #[post("/", format = "json", data = "<records>")]
 fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
     let mut timestamps: HashMap<&str, i64> = HashMap::new();
-    let mut insert_records: HashMap<&str, Vec<ServerRecord>> = HashMap::new();
+    let mut insert_records: HashMap<&str, Vec<ServerRecordItem>> = HashMap::new();
 
     for record in records.iter() {
         // 查找到最新的时间戳
@@ -60,21 +60,22 @@ fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
         }
 
         if let Some(vec_record)  = insert_records.get_mut(record.collection.as_str()) {
-            vec_record.push(ServerRecord {
-                timestamp: record.timestamp,
-                collection: record.collection.to_owned(),
-                record: ServerRecordItem {
-                    info: record.record.info.to_owned(),
-                    codename: record.record.codename.to_owned(),
-                    version: record.record.version.to_owned(),
-                    type_name: record.record.type_name.to_owned(),
-                    id: record.record.id.to_owned(),
-                    timestamp: record.timestamp,
-                    ip: ip.to_string(),
-                    location: get_phy_addr(ip.to_string()),
-                },
+            vec_record.push(ServerRecordItem {
+                codename: record.record.codename.to_owned(),
+                version: record.record.version.to_owned(),
                 id: record.record.id.to_owned(),
-            })
+                timestamp: record.timestamp,
+                ip: ip.to_string(),
+                location: get_phy_addr(ip.to_string()),
+                // exceptions
+                info: record.record.info.to_owned(),
+                type_name: record.record.type_name.to_owned(),
+                // power
+                power: record.record.power.to_owned(),
+                // navigation
+                events: record.record.events.to_owned(),
+                results: record.record.results.to_owned(),
+            });
         }
     }
     let mut inserted_records = Vec::new();

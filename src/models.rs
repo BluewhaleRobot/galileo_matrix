@@ -31,25 +31,50 @@ pub struct Record {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RecordItem {
-    pub info: Option<String>,
+    pub id: String,
     pub codename: Option<String>,
     pub version: Option<String>,
+    // exceptions
     #[serde(rename = "type")]
     pub type_name: Option<String>,
-    pub id: String,
+    pub info: Option<String>,
+    // power
+    pub power: Option<i32>,
+    // navigation
+    // navigation
+    pub events: Option<Vec<NavEventItem>>,
+    pub results: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ServerRecordItem {
-    pub info: Option<String>,
-    pub codename: Option<String>,
-    pub version: Option<String>,
-    #[serde(rename = "type")]
-    pub type_name: Option<String>,
+    // basic
     pub id: String,
     pub timestamp: i64,
     pub ip: String,
     pub location: Option<PhyAddrInfo>,
+    pub codename: Option<String>,
+    pub version: Option<String>,
+    // exceptions
+    pub info: Option<String>,
+    #[serde(rename = "type")]
+    pub type_name: Option<String>,
+    // power
+    pub power: Option<i32>,
+    // navigation
+    pub events: Option<Vec<NavEventItem>>,
+    pub results: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct NavEventItem {
+    pub map: Option<String>,
+    pub path: Option<String>,
+    pub goal_index: Option<i64>,
+    #[serde(rename = "type")]
+    pub type_name: String,
+    pub duration: i64,
+    pub timestamp: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
