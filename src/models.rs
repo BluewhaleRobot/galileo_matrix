@@ -24,7 +24,7 @@ impl TimeStampQuery {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Record {
-    pub timestamp: i64,
+    pub timestamp: f64,
     pub collection: String,
     pub record: RecordItem,
 }
@@ -49,7 +49,7 @@ pub struct RecordItem {
 pub struct ServerRecordItem {
     // basic
     pub id: String,
-    pub timestamp: i64,
+    pub timestamp: f64,
     pub ip: String,
     pub location: Option<PhyAddrInfo>,
     pub codename: Option<String>,
@@ -73,7 +73,7 @@ pub struct NavEventItem {
     #[serde(rename = "type")]
     pub type_name: String,
     pub duration: i64,
-    pub timestamp: Option<i64>,
+    pub timestamp: Option<f64>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

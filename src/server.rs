@@ -36,7 +36,7 @@ fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
 
 #[post("/", format = "json", data = "<records>")]
 fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
-    let mut timestamps: HashMap<&str, i64> = HashMap::new();
+    let mut timestamps: HashMap<&str, f64> = HashMap::new();
     let mut insert_records: HashMap<&str, Vec<ServerRecordItem>> = HashMap::new();
 
     for record in records.iter() {
@@ -47,7 +47,7 @@ fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
                 id: record.record.id.to_owned()
             });
             if let Ok(db_record) = query_res {
-                timestamps.insert(record.collection.as_str(), db_record.get("timestamp").and_then(Bson::as_i64).unwrap());
+                timestamps.insert(record.collection.as_str(), db_record.get("timestamp").and_then(Bson::as_f64).unwrap());
             }
         }
 
