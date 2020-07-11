@@ -47,7 +47,15 @@ fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
                 id: record.record.id.to_owned()
             });
             if let Ok(db_record) = query_res {
-                timestamps.insert(record.collection.as_str(), db_record.get("timestamp").and_then(Bson::as_f64).unwrap());
+                let timestamp_record = db_record.get("timestamp");
+                let mut timestamp_value = 0f64;
+                if timestamp_record.and_then(Bson::as_i64).is_some() {
+                    timestamp_value = timestamp_record.and_then(Bson::as_i64).unwrap() as f64;
+                }
+                if timestamp_record.and_then(Bson::as_f64).is_some() {
+                    timestamp_value = timestamp_record.and_then(Bson::as_f64).unwrap();
+                }
+                timestamps.insert(record.collection.as_str(), timestamp_value);
             }
         }
 
