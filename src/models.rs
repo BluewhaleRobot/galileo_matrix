@@ -72,7 +72,7 @@ pub struct NavEventItem {
     pub goal_index: Option<i64>,
     #[serde(rename = "type")]
     pub type_name: String,
-    pub duration: i64,
+    pub duration: f64,
     pub timestamp: Option<f64>,
 }
 
