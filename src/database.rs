@@ -16,7 +16,7 @@ pub struct Database {
 
 impl Database {
     pub fn new() -> Database {
-        let client = Client::with_uri_str("mongodb://127.0.0.1:27017").expect("connect to database failed");
+        let client = Client::with_uri_str("mongodb://127.0.0.1:22076").expect("connect to database failed");
         let database_name = "galileo_matrix";
     
         Database {
