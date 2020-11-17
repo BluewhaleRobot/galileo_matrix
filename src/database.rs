@@ -1,5 +1,6 @@
 use lazy_static::lazy_static;
 use std::sync::Mutex;
+use std::{thread, time};
 use super::models::{TimeStampQuery, ServerRecordItem};
 
 use mongodb::{
@@ -91,6 +92,7 @@ impl DatabasePool {
                     return &one_lock;
                 }
             }
+            thread::sleep(time::Duration::from_millis(10));
         }
     }
 }
