@@ -19,7 +19,7 @@ limits = { json = 4073741824 }
 [production]
 address = "127.0.0.1"
 port = 10425
-workers = 4
+workers = 10
 keep_alive = 5
 log = "normal"
 secret_key = "Dn78BvF4RpRdgo05hJR3mzMtxdbH4+o0tEB6kBdJKo8="
