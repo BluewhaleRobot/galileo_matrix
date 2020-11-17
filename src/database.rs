@@ -16,7 +16,8 @@ pub struct Database {
 
 impl Database {
     pub fn new() -> Database {
-        let client = Client::with_uri_str("mongodb://127.0.0.1:22076").expect("connect to database failed");
+        // let client = Client::with_uri_str("mongodb://127.0.0.1:22076").expect("connect to database failed");
+        let client = Client::with_uri_str("mongodb://127.0.0.1:27017").expect("connect to database failed");
         let database_name = "galileo_matrix";
     
         Database {
@@ -67,7 +68,34 @@ impl Database {
     }
 }
 
+pub struct DatabasePool {
+    databases: Vec<Mutex<Database>>,
+}
+
+impl DatabasePool {
+    pub fn new(size:usize) -> DatabasePool {
+        let mut databases:Vec<Mutex<Database>> = Vec::new();
+        for _i in 0..size {
+            databases.push(Mutex::new(Database::new()));
+        }
+        DatabasePool {
+            databases: databases,
+        }
+    }
+
+    pub fn lock(&mut self) -> &Mutex<Database> {
+        loop {
+            for one_lock in self.databases.iter() {
+                let lock = one_lock.try_lock();
+                if let Ok(_) = lock {
+                    return &one_lock;
+                }
+            }
+        }
+    }
+}
+
 lazy_static! {
-    pub static ref DATABASE: Mutex<Database> = Mutex::new(Database::new());
+    pub static ref DATABASE_POOL: Mutex<DatabasePool> = Mutex::new(DatabasePool::new(10));
 }
 

@@ -4,7 +4,7 @@ use rocket_contrib::json::Json;
 use rocket::response::Response;
 use super::models::{simple_response, TimeStampQuery, Record, ServerRecordItem, PhyAddrInfo};
 use serde_json::json;
-use super::database::DATABASE;
+use super::database::DATABASE_POOL;
 use mongodb::bson::{Document, Bson};
 use std::collections::HashMap;
 use super::req_guards::IpAddr;
@@ -23,7 +23,8 @@ fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
         }).to_string(), ContentType::JavaScript, Status::Ok);
     }
 
-    let queryres = DATABASE.lock().unwrap().get_timestamp(timequery);
+    let queryres = DATABASE_POOL.lock().unwrap().lock()
+        .lock().unwrap().get_timestamp(timequery);
     if let Err(_) = queryres {
         // 未找到记录则返回空数组
         return simple_response(json!({
@@ -42,10 +43,11 @@ fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
     for record in records.iter() {
         // 查找到最新的时间戳
         if !timestamps.contains_key(record.collection.as_str()) {
-            let query_res = DATABASE.lock().unwrap().get_timestamp(TimeStampQuery {
-                collection: record.collection.to_owned(),
-                id: record.record.id.to_owned()
-            });
+            let query_res = DATABASE_POOL.lock().unwrap().lock()
+                .lock().unwrap().get_timestamp(TimeStampQuery {
+                    collection: record.collection.to_owned(),
+                    id: record.record.id.to_owned()
+                });
             if let Ok(db_record) = query_res {
                 let timestamp_record = db_record.get("timestamp");
                 let mut timestamp_value = 0f64;
@@ -89,9 +91,10 @@ fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
     let mut inserted_records = Vec::new();
     // 插入数据库
     for vec_record in insert_records.iter() {
-        if let Ok(_) = DATABASE.lock().unwrap().insert(vec_record.0, vec_record.1) {
-            inserted_records.extend(vec_record.1.iter())
-        }
+        if let Ok(_) = DATABASE_POOL.lock().unwrap().lock()
+            .lock().unwrap().insert(vec_record.0, vec_record.1) {
+                inserted_records.extend(vec_record.1.iter())
+            }
     }
     
     return simple_response(serde_json::to_string(&inserted_records).unwrap(), ContentType::JavaScript, Status::BadRequest);
