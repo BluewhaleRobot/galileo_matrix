@@ -32,7 +32,7 @@ fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
         }).to_string(),ContentType::JavaScript, Status::Ok);
     }
     let doc:Document = queryres.unwrap();
-    return simple_response(serde_json::to_string(&doc).unwrap(), ContentType::HTML, Status::BadRequest);
+    return simple_response(serde_json::to_string(&doc).unwrap(), ContentType::JavaScript, Status::Ok);
 }
 
 #[post("/", format = "json", data = "<records>")]
@@ -97,7 +97,7 @@ fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
             }
     }
     
-    return simple_response(serde_json::to_string(&inserted_records).unwrap(), ContentType::JavaScript, Status::BadRequest);
+    return simple_response(serde_json::to_string(&inserted_records).unwrap(), ContentType::JavaScript, Status::Ok);
 }
 
 #[cached]
