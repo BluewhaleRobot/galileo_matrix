@@ -20,7 +20,7 @@ fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
         return simple_response(json!({
             "status": "error",
             "description": "invalid robot id",
-        }).to_string(), ContentType::JavaScript, Status::Ok);
+        }).to_string(), ContentType::JavaScript, Status::BadRequest);
     }
 
     let queryres = DATABASE_POOL.lock().unwrap().lock()
