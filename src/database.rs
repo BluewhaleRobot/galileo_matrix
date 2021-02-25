@@ -2,36 +2,45 @@ use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::{thread, time};
 use super::models::{TimeStampQuery, ServerRecordItem};
+use r2d2::PooledConnection;
+use r2d2_mongodb::{ConnectionOptions, MongodbConnectionManager, mongodb::db::ThreadedDatabase};
+use r2d2_mongodb::mongodb as mongodb;
+use mongodb::coll::options::FindOptions;
+use r2d2_mongodb::mongodb::{Document, doc, bson, to_bson};
 
-use mongodb::{
-    bson::{doc, Document, to_bson},
-    sync::{Client},
-    options::FindOneOptions,
-};
-
+type Pool = r2d2::Pool<MongodbConnectionManager>;
+type PooledConn = PooledConnection<MongodbConnectionManager>;
 
 pub struct Database {
     collections: Vec<String>,
-    db: mongodb::sync::Database,
+    db: Pool
 }
 
 impl Database {
     pub fn new() -> Database {
-        let client = Client::with_uri_str("mongodb://127.0.0.1:22076").expect("connect to database failed");
-        // let client = Client::with_uri_str("mongodb://127.0.0.1:27017").expect("connect to database failed");
-        let database_name = "galileo_matrix";
-    
+        print!("############## ok1");
         Database {
             collections: Vec::new(),
-            db: client.database(database_name)
+            db: Pool::builder().max_size(64).build(
+                MongodbConnectionManager::new(
+                    ConnectionOptions::builder()
+                    .with_host("127.0.0.1", 27017)
+                    .with_db("galileo_matrix")
+                    .build()
+                )
+            ).expect("connect to database pool failed")
         }
+    }
+
+    fn get_connection(&self) -> PooledConn {
+        self.db.get().expect("get db connection failed")
     }
 
     pub fn has_collection(&mut self, collection_name: &str) -> bool {
         if self.collections.iter().any(|c| c == collection_name){
             return true;
         }
-        self.collections = self.db.list_collection_names(None).expect("list collection failed");
+        self.collections = self.get_connection().collection_names(None).expect("list collection failed");
         if self.collections.iter().any(|c| c == collection_name){
             return true;
         }
@@ -43,9 +52,10 @@ impl Database {
             return Err(format!("Collection {} not found", &query.collection));
         }
         let filter = doc! { "id": query.id };
-        let find_options = FindOneOptions::builder().sort(doc! { "timestamp": -1 }).build();
-        let collection = self.db.collection(query.collection.as_str());
-        let result = collection.find_one(filter, find_options);
+        let mut find_options = FindOptions::new();
+        find_options.sort = Some(doc!{"timestamp": -1});
+        let collection = self.get_connection().collection(query.collection.as_str());
+        let result = collection.find_one(Some(filter), Some(find_options));
         if let Err(_) = result {
             return Err("record not found".to_string());
         }
@@ -61,7 +71,7 @@ impl Database {
         let bsons:Vec<Document> = records.iter().map(|d| -> Document {
             to_bson(d).unwrap().as_document().unwrap().to_owned()
         }).collect();
-        let res = self.db.collection(collection).insert_many(bsons, None);
+        let res = self.get_connection().collection(collection).insert_many(bsons, None);
         if let Err(_) = res {
             return Err("insert data to database failed".to_string());
         }
@@ -69,35 +79,9 @@ impl Database {
     }
 }
 
-pub struct DatabasePool {
-    databases: Vec<Mutex<Database>>,
-}
-
-impl DatabasePool {
-    pub fn new(size:usize) -> DatabasePool {
-        let mut databases:Vec<Mutex<Database>> = Vec::new();
-        for _i in 0..size {
-            databases.push(Mutex::new(Database::new()));
-        }
-        DatabasePool {
-            databases: databases,
-        }
-    }
-
-    pub fn lock(&mut self) -> &Mutex<Database> {
-        loop {
-            for one_lock in self.databases.iter() {
-                let lock = one_lock.try_lock();
-                if let Ok(_) = lock {
-                    return &one_lock;
-                }
-            }
-            thread::sleep(time::Duration::from_millis(10));
-        }
-    }
-}
-
 lazy_static! {
-    pub static ref DATABASE_POOL: Mutex<DatabasePool> = Mutex::new(DatabasePool::new(10));
+    pub static ref DATABASE_POOL: Mutex<Database> = Mutex::new(
+        Database::new()
+    );
 }
 

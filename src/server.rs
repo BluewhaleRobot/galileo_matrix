@@ -1,11 +1,11 @@
-use rocket::{get, post, routes, Rocket};
+use rocket::{Rocket, data, get, post, routes};
 use rocket::http::{Status, ContentType};
 use rocket_contrib::json::Json;
 use rocket::response::Response;
 use super::models::{simple_response, TimeStampQuery, Record, ServerRecordItem, PhyAddrInfo};
 use serde_json::json;
 use super::database::DATABASE_POOL;
-use mongodb::bson::{Document, Bson};
+use r2d2_mongodb::mongodb::{Document, Bson};
 use std::collections::HashMap;
 use super::req_guards::IpAddr;
 use cached::proc_macro::cached;
@@ -22,9 +22,8 @@ fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
             "description": "invalid robot id",
         }).to_string(), ContentType::JavaScript, Status::BadRequest);
     }
-
-    let queryres = DATABASE_POOL.lock().unwrap().lock()
-        .lock().unwrap().get_timestamp(timequery);
+    let queryres = DATABASE_POOL.lock().expect("get database pool failed")
+        .get_timestamp(timequery);
     if let Err(_) = queryres {
         // 未找到记录则返回空数组
         return simple_response(json!({
@@ -43,8 +42,8 @@ fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
     for record in records.iter() {
         // 查找到最新的时间戳
         if !timestamps.contains_key(record.collection.as_str()) {
-            let query_res = DATABASE_POOL.lock().unwrap().lock()
-                .lock().unwrap().get_timestamp(TimeStampQuery {
+            let query_res = DATABASE_POOL.lock().expect("get database connection failed")
+                .get_timestamp(TimeStampQuery {
                     collection: record.collection.to_owned(),
                     id: record.record.id.to_owned()
                 });
@@ -91,8 +90,8 @@ fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
     let mut inserted_records = Vec::new();
     // 插入数据库
     for vec_record in insert_records.iter() {
-        if let Ok(_) = DATABASE_POOL.lock().unwrap().lock()
-            .lock().unwrap().insert(vec_record.0, vec_record.1) {
+        if let Ok(_) = DATABASE_POOL.lock().expect("get database connection failed")
+            .insert(vec_record.0, vec_record.1) {
                 inserted_records.extend(vec_record.1.iter())
             }
     }
