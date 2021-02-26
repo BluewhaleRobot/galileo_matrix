@@ -5,10 +5,10 @@ use rocket::response::Response;
 use super::models::{simple_response, TimeStampQuery, Record, ServerRecordItem, PhyAddrInfo};
 use serde_json::json;
 use super::database::DATABASE_POOL;
-use r2d2_mongodb::mongodb::{Document, Bson};
 use std::collections::HashMap;
 use super::req_guards::IpAddr;
 use cached::proc_macro::cached;
+use mongodb::bson::{Document, Bson};
 
 #[get("/?<id>&<collection>")]
 fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
@@ -36,17 +36,26 @@ fn timestamp<'a>(id: String, collection:String) -> Response<'a> {
 
 #[post("/", format = "json", data = "<records>")]
 fn upload_records<'a>(ip: IpAddr, records: Json<Vec<Record>>) -> Response<'a> {
+    println!("Uploading records OK1");
     let mut timestamps: HashMap<&str, f64> = HashMap::new();
     let mut insert_records: HashMap<&str, Vec<ServerRecordItem>> = HashMap::new();
+
+    println!("Uploading records OK2");
 
     for record in records.iter() {
         // 查找到最新的时间戳
         if !timestamps.contains_key(record.collection.as_str()) {
+            println!("query database");
             let query_res = DATABASE_POOL.lock().expect("get database connection failed")
                 .get_timestamp(TimeStampQuery {
                     collection: record.collection.to_owned(),
                     id: record.record.id.to_owned()
                 });
+
+            if query_res.is_err() {
+                timestamps.insert(record.collection.as_str(), 0f64);
+            }
+
             if let Ok(db_record) = query_res {
                 let timestamp_record = db_record.get("timestamp");
                 let mut timestamp_value = 0f64;
